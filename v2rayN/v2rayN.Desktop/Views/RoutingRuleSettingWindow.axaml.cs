@@ -19,7 +19,6 @@ public partial class RoutingRuleSettingWindow : WindowBase<RoutingRuleSettingVie
         btnBrowseCustomRulesetPath4Singbox.Click += btnBrowseCustomRulesetPath4Singbox_ClickAsync;
 
         cmbdomainStrategy.ItemsSource = Global.DomainStrategies.AppendEmpty();
-        cmbdomainStrategy4Singbox.ItemsSource = Global.DomainStrategies4Sbox;
 
         this.WhenActivated(disposables =>
         {

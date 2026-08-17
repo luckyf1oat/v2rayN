@@ -235,8 +235,8 @@ public partial class AddGroupServerViewModel : MyReactiveObject, ICloseable
             NoticeManager.Instance.Enqueue(ResUI.PleaseAddAtLeastOneServer);
             return;
         }
-        SelectedSource.CoreType = CoreType.IsNullOrEmpty() ? ECoreType.Xray : Enum.Parse<ECoreType>(CoreType);
-        if (SelectedSource.CoreType is not (ECoreType.Xray or ECoreType.sing_box) ||
+        SelectedSource.CoreType = CoreType.IsNullOrEmpty() ? ECoreType.Xray : (ECoreType)Enum.Parse(typeof(ECoreType), CoreType);
+        if (SelectedSource.CoreType is not ECoreType.Xray ||
             SelectedSource.ConfigType is not (EConfigType.ProxyChain or EConfigType.PolicyGroup))
         {
             return;

@@ -10,31 +10,16 @@ public partial class FullConfigTemplateViewModel : MyReactiveObject, ICloseable
     public partial bool EnableFullConfigTemplate4Ray { get; set; }
 
     [Reactive]
-    public partial bool EnableFullConfigTemplate4Singbox { get; set; }
+    public string FullConfigTemplate4Ray { get; set; }
 
     [Reactive]
-    public partial string FullConfigTemplate4Ray { get; set; } = string.Empty;
+    public string FullTunConfigTemplate4Ray { get; set; }
 
     [Reactive]
-    public partial string FullTunConfigTemplate4Ray { get; set; } = string.Empty;
+    public bool AddProxyOnly4Ray { get; set; }
 
     [Reactive]
-    public partial string FullConfigTemplate4Singbox { get; set; } = string.Empty;
-
-    [Reactive]
-    public partial string FullTunConfigTemplate4Singbox { get; set; } = string.Empty;
-
-    [Reactive]
-    public partial bool AddProxyOnly4Ray { get; set; }
-
-    [Reactive]
-    public partial bool AddProxyOnly4Singbox { get; set; }
-
-    [Reactive]
-    public partial string ProxyDetour4Ray { get; set; } = string.Empty;
-
-    [Reactive]
-    public partial string ProxyDetour4Singbox { get; set; } = string.Empty;
+    public string ProxyDetour4Ray { get; set; }
 
     public ReactiveCommand<RxVoid, RxVoid> SaveCmd { get; }
 
@@ -54,32 +39,15 @@ public partial class FullConfigTemplateViewModel : MyReactiveObject, ICloseable
     private async Task Init()
     {
         var item = await AppManager.Instance.GetFullConfigTemplateItem(ECoreType.Xray);
-        if (item == null)
-        {
-            return;
-        }
-        EnableFullConfigTemplate4Ray = item.Enabled;
-        FullConfigTemplate4Ray = item.Config ?? string.Empty;
-        FullTunConfigTemplate4Ray = item.TunConfig ?? string.Empty;
-        AddProxyOnly4Ray = item.AddProxyOnly ?? false;
-        ProxyDetour4Ray = item.ProxyDetour ?? string.Empty;
-
-        var item2 = await AppManager.Instance.GetFullConfigTemplateItem(ECoreType.sing_box);
-        EnableFullConfigTemplate4Singbox = item2?.Enabled ?? false;
-        FullConfigTemplate4Singbox = item2?.Config ?? string.Empty;
-        FullTunConfigTemplate4Singbox = item2?.TunConfig ?? string.Empty;
-        AddProxyOnly4Singbox = item2?.AddProxyOnly ?? false;
-        ProxyDetour4Singbox = item2?.ProxyDetour ?? string.Empty;
+        EnableFullConfigTemplate4Ray = item?.Enabled ?? false;
+        FullConfigTemplate4Ray = item?.Config ?? string.Empty;
+        AddProxyOnly4Ray = item?.AddProxyOnly ?? false;
+        ProxyDetour4Ray = item?.ProxyDetour ?? string.Empty;
     }
 
     private async Task SaveSettingAsync()
     {
         if (!await SaveXrayConfigAsync())
-        {
-            return;
-        }
-
-        if (!await SaveSingboxConfigAsync())
         {
             return;
         }
@@ -101,24 +69,6 @@ public partial class FullConfigTemplateViewModel : MyReactiveObject, ICloseable
 
         item.AddProxyOnly = AddProxyOnly4Ray;
         item.ProxyDetour = ProxyDetour4Ray;
-
-        await ConfigHandler.SaveFullConfigTemplate(_config, item);
-        return true;
-    }
-
-    private async Task<bool> SaveSingboxConfigAsync()
-    {
-        var item = await AppManager.Instance.GetFullConfigTemplateItem(ECoreType.sing_box);
-        if (item == null)
-        {
-            return false;
-        }
-        item.Enabled = EnableFullConfigTemplate4Singbox;
-        item.Config = FullConfigTemplate4Singbox;
-        item.TunConfig = FullTunConfigTemplate4Singbox;
-
-        item.AddProxyOnly = AddProxyOnly4Singbox;
-        item.ProxyDetour = ProxyDetour4Singbox;
 
         await ConfigHandler.SaveFullConfigTemplate(_config, item);
         return true;

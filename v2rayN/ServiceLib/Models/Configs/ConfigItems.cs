@@ -96,7 +96,7 @@ public class UIItem
     public string CurrentLanguage { get; set; }
     public string CurrentFontFamily { get; set; }
     public int CurrentFontSize { get; set; }
-    public bool EnableDragDropSort { get; set; }
+    public bool EnableDragDropSort { get; set; } = true;
     public bool DoubleClick2Activate { get; set; }
     public bool AutoHideStartup { get; set; }
     public bool Hide2TrayWhenClose { get; set; }

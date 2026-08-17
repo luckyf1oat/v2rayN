@@ -29,7 +29,6 @@ public partial class OptionSettingWindow : WindowBase<OptionSettingViewModel>
         cmbloglevel.ItemsSource = Global.LogLevels;
         cmbdefFingerprint.ItemsSource = Global.Fingerprints;
         cmbdefUserAgent.ItemsSource = Global.UserAgent;
-        cmbmux4SboxProtocol.ItemsSource = Global.SingboxMuxs;
         cmbMtu.ItemsSource = Global.TunMtus;
         cmbStack.ItemsSource = Global.TunStacks;
         cmbIcmpRoutingPolicy.ItemsSource = Global.TunIcmpRoutingPolicies;
@@ -53,7 +52,6 @@ public partial class OptionSettingWindow : WindowBase<OptionSettingViewModel>
         cmbUdpTestTarget.ItemsSource = Global.UdpTestTargets;
         cmbSubConvertUrl.ItemsSource = Global.SubConvertUrls;
         cmbGetFilesSourceUrl.ItemsSource = Global.GeoFilesSources;
-        cmbSrsFilesSourceUrl.ItemsSource = Global.SingboxRulesetSources;
         cmbRoutingRulesSourceUrl.ItemsSource = Global.RoutingRulesSources;
         cmbIPAPIUrl.ItemsSource = Global.IPAPIUrls;
         cmbRootCertificateProvider.ItemsSource = Global.RootCertProviders;
@@ -101,6 +99,7 @@ public partial class OptionSettingWindow : WindowBase<OptionSettingViewModel>
             this.Bind(ViewModel, vm => vm.MacOSShowInDock, v => v.togMacOSShowInDock.IsChecked).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.EnableDragDropSort, v => v.togEnableDragDropSort.IsChecked).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.DoubleClick2Activate, v => v.togDoubleClick2Activate.IsChecked).DisposeWith(disposables);
+            this.Bind(ViewModel, vm => vm.EnableDragDropSort, v => v.togEnableDragDropSort.IsChecked).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.AutoUpdateInterval, v => v.txtautoUpdateInterval.Text).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.CurrentFontFamily, v => v.cmbcurrentFontFamily.Text).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.SpeedTestTimeout, v => v.cmbSpeedTestTimeout.SelectedValue).DisposeWith(disposables);

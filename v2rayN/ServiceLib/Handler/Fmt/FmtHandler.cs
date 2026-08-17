@@ -16,10 +16,7 @@ public class FmtHandler
                 EConfigType.Trojan => TrojanFmt.ToUri(item),
                 EConfigType.VLESS => VLESSFmt.ToUri(item),
                 EConfigType.Hysteria2 => Hysteria2Fmt.ToUri(item),
-                EConfigType.TUIC => TuicFmt.ToUri(item),
                 EConfigType.WireGuard => WireguardFmt.ToUri(item),
-                EConfigType.Anytls => AnytlsFmt.ToUri(item),
-                EConfigType.Naive => NaiveFmt.ToUri(item),
                 _ => null,
             };
 
@@ -72,28 +69,9 @@ public class FmtHandler
             {
                 return Hysteria2Fmt.Resolve(str, out msg);
             }
-            else if (str.StartsWith(Global.Hysteria2RealmProtocolShare)
-                || str.StartsWith(Global.Hysteria2HttpRealmProtocolShare))
-            {
-                return Hysteria2Fmt.ResolveRealm(str, out msg);
-            }
-            else if (str.StartsWith(Global.ProtocolShares[EConfigType.TUIC]))
-            {
-                return TuicFmt.Resolve(str, out msg);
-            }
             else if (str.StartsWith(Global.ProtocolShares[EConfigType.WireGuard]))
             {
                 return WireguardFmt.Resolve(str, out msg);
-            }
-            else if (str.StartsWith(Global.ProtocolShares[EConfigType.Anytls]))
-            {
-                return AnytlsFmt.Resolve(str, out msg);
-            }
-            else if (str.StartsWith(Global.ProtocolShares[EConfigType.Naive])
-                     || str.StartsWith(Global.NaiveHttpsProtocolShare)
-                     || str.StartsWith(Global.NaiveQuicProtocolShare))
-            {
-                return NaiveFmt.Resolve(str, out msg);
             }
             else
             {

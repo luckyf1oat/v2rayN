@@ -99,7 +99,8 @@
                 </StackPanel>
 
             </WrapPanel>
-            <DataGrid
+            <Grid>
+                <DataGrid
                 x:Name="lstProfiles"
                 AutoGenerateColumns="False"
                 BorderThickness="1"
@@ -317,6 +318,16 @@
                         Tag="TotalDown" />
                 </DataGrid.Columns>
             </DataGrid>
+                <Border
+                    x:Name="dropIndicator"
+                    Height="3"
+                    IsVisible="False"
+                    IsHitTestVisible="False"
+                    Background="#FF0A84FF"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    CornerRadius="1" />
+            </Grid>
         </DockPanel>
     </Grid>
 </UserControl>

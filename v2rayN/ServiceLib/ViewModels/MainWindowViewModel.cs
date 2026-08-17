@@ -11,8 +11,6 @@ public partial class MainWindowViewModel : MyReactiveObject
 
     public ProfilesViewModel ProfilesViewModel { get; } = new();
     public MsgViewModel MsgViewModel { get; } = new();
-    public ClashProxiesViewModel ClashProxiesViewModel { get; } = new();
-    public ClashConnectionsViewModel ClashConnectionsViewModel { get; } = new();
     public CheckUpdateViewModel CheckUpdateViewModel { get; } = new();
     public BackupAndRestoreViewModel BackupAndRestoreViewModel { get; } = new();
     public StatusBarViewModel StatusBarViewModel { get; } = StatusBarViewModel.Instance;
@@ -28,10 +26,7 @@ public partial class MainWindowViewModel : MyReactiveObject
     public ReactiveCommand<RxVoid, RxVoid> AddHttpServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddTrojanServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddHysteria2ServerCmd { get; }
-    public ReactiveCommand<RxVoid, RxVoid> AddTuicServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddWireguardServerCmd { get; }
-    public ReactiveCommand<RxVoid, RxVoid> AddAnytlsServerCmd { get; }
-    public ReactiveCommand<RxVoid, RxVoid> AddNaiveServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddCustomServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddCustomOutboundServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddPolicyGroupServerCmd { get; }
@@ -70,9 +65,6 @@ public partial class MainWindowViewModel : MyReactiveObject
 
     [Reactive]
     public partial bool BlReloadEnabled { get; set; }
-
-    [Reactive]
-    public partial bool ShowClashUI { get; set; }
 
     [Reactive]
     public partial int TabMainSelectedIndex { get; set; }
@@ -124,21 +116,9 @@ public partial class MainWindowViewModel : MyReactiveObject
         {
             await AddServerAsync(EConfigType.Hysteria2);
         });
-        AddTuicServerCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await AddServerAsync(EConfigType.TUIC);
-        });
         AddWireguardServerCmd = ReactiveCommand.CreateFromTask(async () =>
         {
             await AddServerAsync(EConfigType.WireGuard);
-        });
-        AddAnytlsServerCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await AddServerAsync(EConfigType.Anytls);
-        });
-        AddNaiveServerCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await AddServerAsync(EConfigType.Naive);
         });
         AddCustomServerCmd = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -693,22 +673,7 @@ public partial class MainWindowViewModel : MyReactiveObject
                 await StatusBarViewModel.TestServerAvailability();
             });
 
-            var showClashUI = AppManager.Instance.IsRunningCore(ECoreType.sing_box);
-            if (showClashUI)
-            {
-                //await Observable.Start(async () =>
-                //{
-                //    await ClashProxiesViewModel.ProxiesReload();
-                //}, RxSchedulers.MainThreadScheduler);
-                await Signal.FromAsync(async () =>
-                    {
-                        await ClashProxiesViewModel.ProxiesReload();
-                        return RxVoid.Default;
-                    }).SubscribeOn(RxSchedulers.MainThreadScheduler)
-                    .ToTask();
-            }
-
-            ReloadResult(showClashUI);
+            ReloadResult();
         }
         finally
         {
@@ -723,12 +688,11 @@ public partial class MainWindowViewModel : MyReactiveObject
         }
     }
 
-    private void ReloadResult(bool showClashUI)
+    private void ReloadResult()
     {
         RxSchedulers.MainThreadScheduler.Schedule(() =>
         {
-            ShowClashUI = showClashUI;
-            TabMainSelectedIndex = showClashUI ? TabMainSelectedIndex : 0;
+            TabMainSelectedIndex = 0;
         });
     }
 

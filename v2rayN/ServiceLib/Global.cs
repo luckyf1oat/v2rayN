@@ -6,40 +6,29 @@ public class Global
     public const string GithubUrl = "https://github.com";
     public const string GithubApiUrl = "https://api.github.com/repos";
     public const string GeoUrl = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/{0}.dat";
-    public const string SingboxRulesetUrl = @"https://raw.githubusercontent.com/2dust/sing-box-rules/rule-set-{0}/{1}.srs";
 
     public const string PromotionUrl = @"aHR0cHM6Ly85LjIzNDQ1Ni54eXovYWJjLmh0bWw=";
     public const string ConfigFileName = "guiNConfig.json";
     public const string CoreConfigFileName = "config.json";
     public const string CorePreConfigFileName = "configPre.json";
     public const string CoreSpeedtestConfigFileName = "configTest{0}.json";
-    public const string ClashMixinConfigFileName = "Mixin.yaml";
 
     public const string NamespaceSample = "ServiceLib.Sample.";
     public const string V2raySampleClient = NamespaceSample + "SampleClientConfig";
-    public const string SingboxSampleClient = NamespaceSample + "SingboxSampleClientConfig";
     public const string V2raySampleHttpRequestFileName = NamespaceSample + "SampleHttpRequest";
     public const string V2raySampleHttpResponseFileName = NamespaceSample + "SampleHttpResponse";
     public const string V2raySampleInbound = NamespaceSample + "SampleInbound";
     public const string V2raySampleOutbound = NamespaceSample + "SampleOutbound";
     public const string V2raySampleTunInbound = NamespaceSample + "SampleTunInbound";
     public const string V2raySampleTunRules = NamespaceSample + "SampleTunRules";
-    public const string SingboxSampleOutbound = NamespaceSample + "SingboxSampleOutbound";
     public const string CustomRoutingFileName = NamespaceSample + "custom_routing_";
-    public const string TunSingboxDNSFileName = NamespaceSample + "tun_singbox_dns";
-    public const string TunSingboxInboundFileName = NamespaceSample + "tun_singbox_inbound";
-    public const string TunSingboxRulesFileName = NamespaceSample + "tun_singbox_rules";
     public const string DNSV2rayNormalFileName = NamespaceSample + "dns_v2ray_normal";
-    public const string DNSSingboxNormalFileName = NamespaceSample + "dns_singbox_normal";
-    public const string ClashMixinYaml = NamespaceSample + "clash_mixin_yaml";
-    public const string ClashTunYaml = NamespaceSample + "clash_tun_yaml";
     public const string LinuxAutostartConfig = NamespaceSample + "linux_autostart_config";
     public const string PacFileName = NamespaceSample + "pac";
     public const string ProxySetOSXShellFileName = NamespaceSample + "proxy_set_osx_sh";
     public const string ProxySetLinuxShellFileName = NamespaceSample + "proxy_set_linux_sh";
     public const string KillAsSudoOSXShellFileName = NamespaceSample + "kill_as_sudo_osx_sh";
     public const string KillAsSudoLinuxShellFileName = NamespaceSample + "kill_as_sudo_linux_sh";
-    public const string SingboxFakeIPFilterFileName = NamespaceSample + "singbox_fakeip_filter";
     public const string ChromeRootCertFileName = NamespaceSample + "chrome_roots_pem";
     public const string MozillaRootCertFileName = NamespaceSample + "mozilla_roots_pem";
 
@@ -97,13 +86,8 @@ public class Global
     public const string StringFalse = "false";
     public const int SqliteMaxBatchSize = 10000;
 
-    public const string SingboxDirectDNSTag = "direct_dns";
-    public const string SingboxRemoteDNSTag = "remote_dns";
-    public const string SingboxLocalDNSTag = "local_local";
-    public const string SingboxHostsDNSTag = "hosts_dns";
-    public const string SingboxFakeDNSTag = "fake_dns";
-
     public const int Hysteria2DefaultHopInt = 30;
+
     public const string PolicyGroupExcludeKeywords = @"剩余|过期|到期|重置|[Rr]emaining|[Ee]xpir|[Rr]eset";
     public const string PolicyGroupDefaultAllFilter = $"^(?!.*(?:{PolicyGroupExcludeKeywords})).*$";
 
@@ -146,7 +130,6 @@ public class Global
         "",
         "mixed",
         "v2ray",
-        "clash",
         "ss"
     ];
 
@@ -176,13 +159,6 @@ public class Global
         "",
         @"https://github.com/runetfreedom/russia-v2ray-rules-dat/releases/latest/download/{0}.dat",
         @"https://github.com/Chocolate4U/Iran-v2ray-rules/releases/latest/download/{0}.dat"
-    ];
-
-    public static readonly List<string> SingboxRulesetSources =
-    [
-        "",
-        @"https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-{0}/{1}.srs",
-        @"https://raw.githubusercontent.com/chocolate4u/Iran-sing-box-rules/rule-set/{1}.srs"
     ];
 
     public static readonly List<string> RoutingRulesSources =
@@ -216,10 +192,6 @@ public class Global
 
     public const string Hysteria2HttpRealmProtocolShare = "hysteria2+realm+http://";
 
-    public const string NaiveHttpsProtocolShare = "naive+https://";
-
-    public const string NaiveQuicProtocolShare = "naive+quic://";
-
     public const string SOCKS5Protocol = "socks5://";
 
     public const string SOCKS4Protocol = "socks4://";
@@ -232,10 +204,7 @@ public class Global
         { EConfigType.VLESS, "vless://" },
         { EConfigType.Trojan, "trojan://" },
         { EConfigType.Hysteria2, "hysteria2://" },
-        { EConfigType.TUIC, "tuic://" },
-        { EConfigType.WireGuard, "wireguard://" },
-        { EConfigType.Anytls, "anytls://" },
-        { EConfigType.Naive, "naive://" }
+        { EConfigType.WireGuard, "wireguard://" }
     };
 
     public static readonly Dictionary<EConfigType, string> ProtocolTypes = new()
@@ -247,10 +216,7 @@ public class Global
         { EConfigType.VLESS, "vless" },
         { EConfigType.Trojan, "trojan" },
         { EConfigType.Hysteria2, "hysteria2" },
-        { EConfigType.TUIC, "tuic" },
-        { EConfigType.WireGuard, "wireguard" },
-        { EConfigType.Anytls, "anytls" },
-        { EConfigType.Naive, "naive" }
+        { EConfigType.WireGuard, "wireguard" }
     };
 
     public static readonly List<string> VmessSecurities =
@@ -285,28 +251,6 @@ public class Global
         "2022-blake3-aes-128-gcm",
         "2022-blake3-aes-256-gcm",
         "2022-blake3-chacha20-poly1305"
-    ];
-
-    public static readonly List<string> SsSecuritiesInSingbox =
-    [
-        "aes-256-gcm",
-        "aes-192-gcm",
-        "aes-128-gcm",
-        "chacha20-ietf-poly1305",
-        "xchacha20-ietf-poly1305",
-        "none",
-        "2022-blake3-aes-128-gcm",
-        "2022-blake3-aes-256-gcm",
-        "2022-blake3-chacha20-poly1305",
-        "aes-128-ctr",
-        "aes-192-ctr",
-        "aes-256-ctr",
-        "aes-128-cfb",
-        "aes-192-cfb",
-        "aes-256-cfb",
-        "rc4-md5",
-        "chacha20-ietf",
-        "xchacha20"
     ];
 
     public static readonly List<string> Flows =
@@ -348,8 +292,7 @@ public class Global
 
     public static readonly List<string> CoreTypes =
     [
-        "Xray",
-        "sing_box"
+        "Xray"
     ];
 
     public static readonly HashSet<EConfigType> XraySupportConfigType =
@@ -364,37 +307,11 @@ public class Global
         EConfigType.HTTP,
     ];
 
-    public static readonly HashSet<EConfigType> SingboxSupportConfigType =
-    [
-        EConfigType.VMess,
-        EConfigType.VLESS,
-        EConfigType.Shadowsocks,
-        EConfigType.Trojan,
-        EConfigType.Hysteria2,
-        EConfigType.TUIC,
-        EConfigType.Anytls,
-        EConfigType.Naive,
-        EConfigType.WireGuard,
-        EConfigType.SOCKS,
-        EConfigType.HTTP,
-    ];
-
-    public static readonly HashSet<EConfigType> SingboxOnlyConfigType = SingboxSupportConfigType.Except(XraySupportConfigType).ToHashSet();
-
     public static readonly List<string> DomainStrategies =
     [
         AsIs,
         IPIfNonMatch,
         IPOnDemand
-    ];
-
-    public static readonly List<string> DomainStrategies4Sbox =
-    [
-        "",
-        "prefer_ipv4",
-        "prefer_ipv6",
-        "ipv4_only",
-        "ipv6_only"
     ];
 
     public static readonly List<string> Fingerprints =
@@ -580,71 +497,9 @@ public class Global
         ""
     ];
 
-    public static readonly List<string> SingboxMuxs =
-    [
-        "h2mux",
-        "smux",
-        "yamux",
-        ""
-    ];
-
-    public static readonly List<string> TuicCongestionControls =
-    [
-        "cubic",
-        "new_reno",
-        "bbr"
-    ];
-
-    public static readonly List<string> NaiveCongestionControls =
-    [
-        "bbr",
-        "bbr2",
-        "cubic",
-        "reno"
-    ];
-
-    public static readonly List<string> allowSelectType =
-    [
-        "selector",
-        "urltest",
-        "loadbalance",
-        "fallback"
-    ];
-
-    public static readonly List<string> notAllowTestType =
-    [
-        "selector",
-        "urltest",
-        "direct",
-        "reject",
-        "compatible",
-        "pass",
-        "loadbalance",
-        "fallback"
-    ];
-
-    public static readonly List<string> proxyVehicleType =
-    [
-        "file",
-        "http"
-    ];
-
     public static readonly Dictionary<ECoreType, string> CoreUrls = new()
     {
-        { ECoreType.v2fly, "v2fly/v2ray-core" },
-        { ECoreType.v2fly_v5, "v2fly/v2ray-core" },
         { ECoreType.Xray, "XTLS/Xray-core" },
-        { ECoreType.sing_box, "SagerNet/sing-box" },
-        { ECoreType.mihomo, "MetaCubeX/mihomo" },
-        { ECoreType.hysteria, "apernet/hysteria" },
-        { ECoreType.hysteria2, "apernet/hysteria" },
-        { ECoreType.naiveproxy, "klzgrad/naiveproxy" },
-        { ECoreType.tuic, "EAimTY/tuic" },
-        { ECoreType.juicity, "juicity/juicity" },
-        { ECoreType.brook, "txthinking/brook" },
-        { ECoreType.overtls, "ShadowsocksR-Live/overtls" },
-        { ECoreType.shadowquic, "spongebob888/shadowquic" },
-        { ECoreType.mieru, "enfein/mieru" },
         { ECoreType.v2rayN, "2dust/v2rayN" },
     };
 

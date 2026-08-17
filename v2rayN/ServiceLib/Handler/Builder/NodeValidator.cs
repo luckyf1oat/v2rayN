@@ -12,16 +12,6 @@ public record NodeValidatorResult(List<string> Errors, List<string> Warnings)
 
 public class NodeValidator
 {
-    // Static validator rules
-    private static readonly HashSet<string> SingboxUnsupportedTransports =
-        [nameof(ETransport.kcp), nameof(ETransport.xhttp)];
-
-    private static readonly HashSet<EConfigType> SingboxTransportSupportedProtocols =
-        [EConfigType.VMess, EConfigType.VLESS, EConfigType.Trojan, EConfigType.Shadowsocks];
-
-    private static readonly HashSet<string> SingboxShadowsocksAllowedTransports =
-        [nameof(ETransport.raw), nameof(ETransport.ws)];
-
     public static NodeValidatorResult Validate(ProfileItem item, ECoreType coreType)
     {
         var v = new ValidationContext();
@@ -56,26 +46,9 @@ public class NodeValidator
         v.Assert(item.Port is > 0 and <= 65535, string.Format(ResUI.MsgInvalidProperty, ResUI.TbPort));
 
         // Network & Core Logic
-        var net = item.GetNetwork();
-        if (coreType == ECoreType.sing_box)
+        if (!Global.XraySupportConfigType.Contains(item.ConfigType))
         {
-            var transportError = ValidateSingboxTransport(item.ConfigType, net);
-            if (transportError != null)
-            {
-                v.Error(transportError);
-            }
-
-            if (!Global.SingboxSupportConfigType.Contains(item.ConfigType))
-            {
-                v.Error(string.Format(ResUI.MsgCoreNotSupportProtocol, nameof(ECoreType.sing_box), item.ConfigType));
-            }
-        }
-        else if (coreType is ECoreType.Xray)
-        {
-            if (!Global.XraySupportConfigType.Contains(item.ConfigType))
-            {
-                v.Error(string.Format(ResUI.MsgCoreNotSupportProtocol, nameof(ECoreType.Xray), item.ConfigType));
-            }
+            v.Error(string.Format(ResUI.MsgCoreNotSupportProtocol, nameof(ECoreType.Xray), item.ConfigType));
         }
 
         // Protocol Specifics
@@ -101,8 +74,8 @@ public class NodeValidator
                 v.Assert(!item.Password.IsNullOrEmpty(), string.Format(ResUI.MsgInvalidProperty, ResUI.TbId3));
                 v.Assert(
                     !string.IsNullOrEmpty(protocolExtra.SsMethod) &&
-                    Global.SsSecuritiesInSingbox.Contains(protocolExtra.SsMethod),
-                    string.Format(ResUI.MsgInvalidProperty, ResUI.TbSecurity3));
+                    Global.SsSecuritiesInXray.Contains(protocolExtra.SsMethod),
+                    string.Format(ResUI.MsgInvalidProperty, "SsMethod"));
                 break;
         }
 
@@ -139,13 +112,10 @@ public class NodeValidator
                 v.Warning(ResUI.MsgAllowInsecureDeprecated);
             }
 
-            if ((coreType == ECoreType.Xray
+            if (coreType == ECoreType.Xray
                 && item.GetAllowInsecure()
                 && !isCertProvided
                 && item.CertSha.IsNullOrEmpty())
-                || (coreType == ECoreType.sing_box
-                    && item.GetAllowInsecure()
-                    && !isCertProvided))
             {
                 v.Warning(ResUI.MsgInsecureConfiguration);
             }
@@ -172,31 +142,6 @@ public class NodeValidator
                 v.Error(string.Format(ResUI.MsgInvalidProperty, ResUI.TbFinalmask));
             }
         }
-    }
-
-    private static string? ValidateSingboxTransport(EConfigType configType, string net)
-    {
-        // sing-box does not support xhttp / kcp transports
-        if (SingboxUnsupportedTransports.Contains(net))
-        {
-            return string.Format(ResUI.MsgCoreNotSupportNetwork, nameof(ECoreType.sing_box), net);
-        }
-
-        // sing-box does not support non-tcp transports for protocols other than vmess/trojan/vless/shadowsocks
-        if (!SingboxTransportSupportedProtocols.Contains(configType) && net != nameof(ETransport.raw))
-        {
-            return string.Format(ResUI.MsgCoreNotSupportProtocolTransport,
-                nameof(ECoreType.sing_box), configType.ToString(), net);
-        }
-
-        // sing-box shadowsocks only supports tcp/ws/quic transports
-        if (configType == EConfigType.Shadowsocks && !SingboxShadowsocksAllowedTransports.Contains(net))
-        {
-            return string.Format(ResUI.MsgCoreNotSupportProtocolTransport,
-                nameof(ECoreType.sing_box), configType.ToString(), net);
-        }
-
-        return null;
     }
 
     private class ValidationContext
@@ -227,4 +172,5 @@ public class NodeValidator
             return new NodeValidatorResult(Errors, Warnings);
         }
     }
+
 }

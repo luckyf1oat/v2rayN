@@ -713,9 +713,13 @@ public partial class ProfilesViewModel : MyReactiveObject
         }
     }
 
-    public async Task MoveServerTo(int startIndex, ProfileItemModel targetItem)
+    public async Task MoveServerTo(int startIndex, ProfileItemModel targetItem, bool insertBelow)
     {
         var targetIndex = ProfileItems.IndexOf(targetItem);
+        if (insertBelow)
+        {
+            targetIndex++;
+        }
         if (startIndex >= 0 && targetIndex >= 0 && startIndex != targetIndex)
         {
             if (await ConfigHandler.MoveServer(_config, _lstProfile, startIndex, EMove.Position, targetIndex) == 0)

@@ -36,8 +36,8 @@ public class CoreConfigContextBuilder
     public static async Task<CoreConfigContextBuilderResult> Build(Config config, ProfileItem node)
     {
         var runCoreType = AppManager.Instance.GetCoreType(node, node.ConfigType);
-        var coreType = runCoreType == ECoreType.sing_box ? ECoreType.sing_box : ECoreType.Xray;
-        var context = new CoreConfigContext
+        var coreType = ECoreType.Xray;
+        var context = new CoreConfigContext()
         {
             Node = node,
             RunCoreType = runCoreType,
@@ -51,7 +51,7 @@ public class CoreConfigContextBuilder
             RoutingItem = await ConfigHandler.GetDefaultRouting(config),
             IsWindows = Utils.IsWindows(),
             IsMacOS = Utils.IsMacOS(),
-            ProtectCoreTypeList = config.TunModeItem.EnableTun ? [ECoreType.Xray, ECoreType.sing_box] : []
+            ProtectCoreTypeList = config.TunModeItem.EnableTun ? [ECoreType.Xray] : []
         };
         var validatorResult = NodeValidatorResult.Empty();
         var (actNode, nodeValidatorResult) = await ResolveNodeAsync(context, node);

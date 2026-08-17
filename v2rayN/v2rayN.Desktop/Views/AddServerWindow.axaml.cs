@@ -113,11 +113,6 @@ public partial class AddServerWindow : WindowBase<AddServerViewModel>
                             this.Bind(ViewModel, vm => vm.GeckoMaxPacketSize, v => v.txtMaxGeckoPacketSize.Text).DisposeWith(currentTypeDisposables);
                             break;
 
-                        case EConfigType.TUIC:
-                            this.Bind(ViewModel, vm => vm.SelectedSource.Username, v => v.txtId8.Text).DisposeWith(currentTypeDisposables);
-                            this.Bind(ViewModel, vm => vm.SelectedSource.Password, v => v.txtSecurity8.Text).DisposeWith(currentTypeDisposables);
-                            this.Bind(ViewModel, vm => vm.CongestionControl, v => v.cmbCongestionControl8.SelectedValue).DisposeWith(currentTypeDisposables);
-                            break;
 
                         case EConfigType.WireGuard:
                             this.Bind(ViewModel, vm => vm.SelectedSource.Password, v => v.txtId9.Text).DisposeWith(currentTypeDisposables);
@@ -128,19 +123,7 @@ public partial class AddServerWindow : WindowBase<AddServerViewModel>
                             this.Bind(ViewModel, vm => vm.WgMtu, v => v.txtShortId9.Text).DisposeWith(currentTypeDisposables);
                             break;
 
-                        case EConfigType.Anytls:
-                            this.Bind(ViewModel, vm => vm.SelectedSource.Password, v => v.txtId11.Text).DisposeWith(currentTypeDisposables);
-                            break;
 
-                        case EConfigType.Naive:
-                            this.Bind(ViewModel, vm => vm.SelectedSource.Username, v => v.txtId12.Text).DisposeWith(currentTypeDisposables);
-                            this.Bind(ViewModel, vm => vm.SelectedSource.Password, v => v.txtSecurity12.Text).DisposeWith(currentTypeDisposables);
-                            this.Bind(ViewModel, vm => vm.NaiveQuic, v => v.togNaiveQuic12.IsChecked).DisposeWith(currentTypeDisposables);
-                            this.Bind(ViewModel, vm => vm.NaiveQuic, v => v.cmbCongestionControl12.IsEnabled).DisposeWith(currentTypeDisposables);
-                            this.Bind(ViewModel, vm => vm.CongestionControl, v => v.cmbCongestionControl12.SelectedValue).DisposeWith(currentTypeDisposables);
-                            this.Bind(ViewModel, vm => vm.InsecureConcurrency, v => v.txtInsecureConcurrency12.Text).DisposeWith(currentTypeDisposables);
-                            this.Bind(ViewModel, vm => vm.Uot, v => v.togUotEnabled12.IsChecked).DisposeWith(currentTypeDisposables);
-                            break;
                     }
                 })
                 .DisposeWith(disposables);
@@ -243,16 +226,6 @@ public partial class AddServerWindow : WindowBase<AddServerViewModel>
                 cmbAlpn.IsEnabled = false;
                 break;
 
-            case EConfigType.TUIC:
-                gridTuic.IsVisible = true;
-                sepa2.IsVisible = false;
-                gridTransport.IsVisible = false;
-                cmbCoreType.IsEnabled = false;
-                cmbFingerprint.IsEnabled = false;
-                gridFinalmask.IsVisible = false;
-
-                cmbCongestionControl8.ItemsSource = Global.TuicCongestionControls;
-                break;
 
             case EConfigType.WireGuard:
                 gridWireguard.IsVisible = true;
@@ -263,27 +236,7 @@ public partial class AddServerWindow : WindowBase<AddServerViewModel>
 
                 break;
 
-            case EConfigType.Anytls:
-                gridAnytls.IsVisible = true;
-                sepa2.IsVisible = false;
-                gridTransport.IsVisible = false;
-                lstStreamSecurity.Add(Global.StreamSecurityReality);
-                cmbCoreType.IsEnabled = false;
-                gridFinalmask.IsVisible = false;
-                break;
 
-            case EConfigType.Naive:
-                gridNaive.IsVisible = true;
-                sepa2.IsVisible = false;
-                gridTransport.IsVisible = false;
-                cmbCoreType.IsEnabled = false;
-                gridFinalmask.IsVisible = false;
-                cmbFingerprint.IsEnabled = false;
-                cmbAlpn.IsEnabled = false;
-                togAllowInsecure.IsEnabled = false;
-
-                cmbCongestionControl12.ItemsSource = Global.NaiveCongestionControls;
-                break;
         }
         cmbStreamSecurity.ItemsSource = lstStreamSecurity;
         cmbStreamSecurity.SelectedItem = profileItem.StreamSecurity;

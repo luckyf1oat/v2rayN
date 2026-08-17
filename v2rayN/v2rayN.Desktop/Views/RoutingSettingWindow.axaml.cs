@@ -17,7 +17,6 @@ public partial class RoutingSettingWindow : WindowBase<RoutingSettingViewModel>
         menuRoutingAdvancedSelectAll.Click += menuRoutingAdvancedSelectAll_Click;
 
         cmbdomainStrategy.ItemsSource = Global.DomainStrategies;
-        cmbdomainStrategy4Singbox.ItemsSource = Global.DomainStrategies4Sbox;
 
         this.WhenActivated(disposables =>
         {

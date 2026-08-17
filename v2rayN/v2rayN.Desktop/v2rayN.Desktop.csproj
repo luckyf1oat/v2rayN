@@ -8,6 +8,8 @@
 		<AssemblyName>v2rayN</AssemblyName>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<CETCompat>false</CETCompat>
+		<!-- 自定义：预编译的 Xray 核心路径（可命令行 -p:XrayCorePath=xxx 覆盖） -->
+		<XrayCorePath Condition="'$(XrayCorePath)' == ''">E:/GitHub/Xray-core/xray.exe</XrayCorePath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -40,6 +42,14 @@
 		<ProjectReference Include="..\GlobalHotKeys\src\GlobalHotKeys\GlobalHotKeys.csproj" />
 		<ProjectReference Include="..\ServiceLib\ServiceLib.csproj" />
 	</ItemGroup>
+
+	<!-- 打包 xray.exe 到输出目录的 bin/xray/ 下 -->
+	<Target Name="CopyXrayCore" AfterTargets="Build" Condition="Exists('$(XrayCorePath)')">
+		<Copy SourceFiles="$(XrayCorePath)" DestinationFolder="$(TargetDir)bin\xray\" SkipUnchangedFiles="true" />
+	</Target>
+	<Target Name="CopyXrayCorePublish" AfterTargets="Publish" Condition="Exists('$(XrayCorePath)')">
+		<Copy SourceFiles="$(XrayCorePath)" DestinationFolder="$(PublishDir)bin\xray\" SkipUnchangedFiles="true" />
+	</Target>
 
 	<ItemGroup>
 		<EmbeddedResource Include="Assets\v2rayN.ico">

@@ -26,10 +26,6 @@ public static class DesignData
 
     public static RoutingSettingViewModel? RoutingSetting { get; } = SafeCreate(() => new RoutingSettingViewModel());
 
-    public static ClashProxiesViewModel? ClashProxies { get; } = SafeCreate(() => new ClashProxiesViewModel());
-
-    public static ClashConnectionsViewModel? ClashConnections { get; } = SafeCreate(() => new ClashConnectionsViewModel());
-
     public static CheckUpdateViewModel? CheckUpdate { get; } = SafeCreate(() => new CheckUpdateViewModel());
 
     public static DNSSettingViewModel? DNSSetting { get; } = SafeCreate(() => new DNSSettingViewModel());

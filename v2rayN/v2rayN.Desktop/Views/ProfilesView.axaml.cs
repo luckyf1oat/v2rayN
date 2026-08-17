@@ -8,6 +8,15 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
 {
     private static Config _config;
     private static readonly string _tag = "ProfilesView";
+    private Point _dragStartPoint;
+    private int _dragSourceIndex = -1;
+    private bool _isPointerPressed = false;
+    private bool _isDragging = false;
+    private bool _dropBelow = false;
+    private bool _isSelecting = false;
+    private int _dragSelectStartIndex = -1;
+    private bool _suppressSelectionChanged = false;
+    private const string _dragFormat = "v2rayN.ProfileIndex";
 
     public ProfilesView()
     {
@@ -150,6 +159,7 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
               .ObserveOn(RxSchedulers.MainThreadScheduler)
               .Subscribe(_ => StorageUI())
               .DisposeWith(disposables);
+
         });
 
         RestoreUI();
@@ -190,6 +200,10 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
 
     private void lstProfiles_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
+        if (_suppressSelectionChanged)
+        {
+            return;
+        }
         if (ViewModel != null)
         {
             ViewModel.SelectedProfiles = lstProfiles.SelectedItems.Cast<ProfileItemModel>().ToList();
@@ -523,7 +537,7 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
         var newIndex = items.IndexOf(targetItem);
         if (oldIndex >= 0 && newIndex >= 0)
         {
-            ViewModel?.MoveServerTo(oldIndex, targetItem);
+            ViewModel?.MoveServerTo(oldIndex, targetItem, false);
         }
     }
 
