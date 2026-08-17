@@ -10,16 +10,16 @@ public partial class FullConfigTemplateViewModel : MyReactiveObject, ICloseable
     public partial bool EnableFullConfigTemplate4Ray { get; set; }
 
     [Reactive]
-    public string FullConfigTemplate4Ray { get; set; }
+    public partial string FullConfigTemplate4Ray { get; set; }
 
     [Reactive]
-    public string FullTunConfigTemplate4Ray { get; set; }
+    public partial string FullTunConfigTemplate4Ray { get; set; }
 
     [Reactive]
-    public bool AddProxyOnly4Ray { get; set; }
+    public partial bool AddProxyOnly4Ray { get; set; }
 
     [Reactive]
-    public string ProxyDetour4Ray { get; set; }
+    public partial string ProxyDetour4Ray { get; set; }
 
     public ReactiveCommand<RxVoid, RxVoid> SaveCmd { get; }
 

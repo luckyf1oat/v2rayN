@@ -21,7 +21,7 @@ public partial class DNSSettingViewModel : MyReactiveObject, ICloseable
     [Reactive] public partial bool ServeStale { get; set; }
     [Reactive] public partial bool EnableHappyEyeballs { get; set; }
 
-    [Reactive] public bool RayCustomDNSEnableCompatible { get; set; }
+    [Reactive] public partial bool RayCustomDNSEnableCompatible { get; set; }
     [Reactive] public partial bool UseSystemHostsCompatible { get; set; }
     [Reactive] public partial string DomainStrategy4FreedomCompatible { get; set; } = string.Empty;
     [Reactive] public partial string DomainDNSAddressCompatible { get; set; } = string.Empty;
