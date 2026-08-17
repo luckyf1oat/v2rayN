@@ -8,7 +8,12 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
 {
     private static Config _config;
     private static readonly string _tag = "ProfilesView";
+    private int _dragSourceIndex = -1;
+    private bool _dropBelow = false;
+    private bool _isSelecting = false;
+    private int _dragSelectStartIndex = -1;
     private bool _suppressSelectionChanged = false;
+    private static readonly DataFormat<object> _dragFormat = DataFormat.CreateInProcessFormat<object>("v2rayN.ProfileIndex");
 
     public ProfilesView()
     {
@@ -26,11 +31,12 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
         lstProfiles.Sorting += LstProfiles_Sorting;
         if (_config.UiItem.EnableDragDropSort)
         {
-            lstProfiles.SetValue(DragDrop.AllowDropProperty, true);
-
-            lstProfiles.AddHandler(PointerPressedEvent, LstProfiles_PointerPressed, RoutingStrategies.Bubble, true);
-            lstProfiles.AddHandler(DragDrop.DragOverEvent, LstProfiles_DragOver, RoutingStrategies.Bubble);
-            lstProfiles.AddHandler(DragDrop.DropEvent, LstProfiles_Drop, RoutingStrategies.Bubble);
+            DragDrop.SetAllowDrop(lstProfiles, true);
+            lstProfiles.AddHandler(PointerPressedEvent, LstProfiles_PointerPressed, RoutingStrategies.Tunnel, true);
+            lstProfiles.AddHandler(PointerMovedEvent, LstProfiles_PointerMoved, RoutingStrategies.Bubble, true);
+            lstProfiles.AddHandler(PointerReleasedEvent, LstProfiles_PointerReleased, RoutingStrategies.Bubble, true);
+            lstProfiles.AddHandler(DragDrop.DragOverEvent, LstProfiles_DragOver);
+            lstProfiles.AddHandler(DragDrop.DropEvent, LstProfiles_Drop);
         }
 
         this.WhenActivated(disposables =>
@@ -204,6 +210,7 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
 
     private void LstProfiles_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
+        ResetDragState();
         var source = e.Source as Border;
         if (source?.Name == "HeaderBackground")
         {
@@ -441,97 +448,264 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
 
     #region Drag and Drop
 
-    private static readonly DataFormat<object> LstProfilesRowFormat =
-        DataFormat.CreateInProcessFormat<object>("LstProfilesRow");
+#pragma warning disable CS0618 // 拖放使用旧 API（DataObject/DoDragDrop）以兼容当前 Avalonia 版本
 
     private async void LstProfiles_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         try
         {
-            if (e.Source is not Visual visualSource)
+            if (!e.GetCurrentPoint(lstProfiles).Properties.IsLeftButtonPressed)
             {
                 return;
             }
-
-            var row = visualSource.FindAncestorOfType<DataGridRow>(true);
-            if (row?.DataContext == null)
+            var isSortModifier = e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Alt);
+            if (isSortModifier)
             {
-                return;
-            }
-
-            if (e.GetCurrentPoint(row).Properties.IsLeftButtonPressed)
-            {
+                // Ctrl+Alt + 左键：拖拽排序
+                var row = FindAncestor<DataGridRow>(e.Source as Control);
+                if (row == null)
+                {
+                    return;
+                }
+                _dragSourceIndex = row.Index;
+                // 阻止 DataGrid 进入选择逻辑，避免其状态被拖拽打断后卡死
+                e.Handled = true;
+                e.Pointer.Capture(lstProfiles);
                 var dragData = new DataTransfer();
-                var item = DataTransferItem.Create(LstProfilesRowFormat, row.DataContext);
-                dragData.Add(item);
-                await DragDrop.DoDragDropAsync(e, dragData, DragDropEffects.Move);
+                var dragItem = DataTransferItem.Create(_dragFormat, _dragSourceIndex);
+                dragData.Add(dragItem);
+                try
+                {
+                    await DragDrop.DoDragDropAsync(e, dragData, DragDropEffects.Move);
+                }
+                finally
+                {
+                    _dragSourceIndex = -1;
+                    e.Pointer.Capture(null);
+                    dropIndicator.IsVisible = false;
+                }
+            }
+            else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            {
+                // Ctrl + 左键：DataGrid 原生多选（切换选中），不拦截
+                return;
+            }
+            else
+            {
+                // 双击：不启动范围选择，避免状态残留导致编辑取消后误触发多选
+                if (e.ClickCount > 1)
+                {
+                    ResetDragState();
+                    return;
+                }
+                // 左键：按住拖动 = 范围多选（不捕获指针，避免干扰双击检测）
+                var row = FindAncestor<DataGridRow>(e.Source as Control);
+                if (row == null)
+                {
+                    return;
+                }
+                _dragSelectStartIndex = row.Index;
+                _isSelecting = true;
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore
+            Logging.SaveLog(_tag, ex);
+        }
+    }
+
+    private void LstProfiles_PointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        try
+        {
+            if (_isSelecting)
+            {
+                _isSelecting = false;
+                _dragSelectStartIndex = -1;
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+        }
+    }
+
+    private void ResetDragState()
+    {
+        _dragSourceIndex = -1;
+        _isSelecting = false;
+        _dragSelectStartIndex = -1;
+        dropIndicator.IsVisible = false;
+    }
+
+    private void LstProfiles_PointerMoved(object? sender, PointerEventArgs e)
+    {
+        try
+        {
+            if (_isSelecting)
+            {
+                // 按住左键拖动：范围多选
+                var row = FindRowAtY(e.GetPosition(lstProfiles).Y);
+                if (row != null && row.Index >= 0)
+                {
+                    UpdateDragSelection(row.Index);
+                }
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+        }
+    }
+
+    private DataGridRow? FindRowAtY(double y)
+    {
+        foreach (var row in lstProfiles.GetVisualDescendants().OfType<DataGridRow>())
+        {
+            var top = row.TranslatePoint(new Point(0, 0), lstProfiles);
+            if (top.HasValue && y >= top.Value.Y && y <= top.Value.Y + row.Bounds.Height)
+            {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    private void UpdateDragSelection(int currentIndex)
+    {
+        var start = Math.Min(_dragSelectStartIndex, currentIndex);
+        var end = Math.Max(_dragSelectStartIndex, currentIndex);
+        _suppressSelectionChanged = true;
+        lstProfiles.SelectedItems.Clear();
+        for (var i = start; i <= end; i++)
+        {
+            var item = ViewModel?.ProfileItems.ElementAtOrDefault(i);
+            if (item != null)
+            {
+                lstProfiles.SelectedItems.Add(item);
+            }
+        }
+        _suppressSelectionChanged = false;
+        if (ViewModel != null)
+        {
+            ViewModel.SelectedProfiles = lstProfiles.SelectedItems.Cast<ProfileItemModel>().ToList();
         }
     }
 
     private void LstProfiles_DragOver(object? sender, DragEventArgs e)
     {
-        if (!e.DataTransfer.Contains(LstProfilesRowFormat))
+        if (!e.DataTransfer.Contains(_dragFormat))
         {
             e.DragEffects = DragDropEffects.None;
+            dropIndicator.IsVisible = false;
             return;
         }
         e.DragEffects = DragDropEffects.Move;
+        e.Handled = true;
+        UpdateDropIndicator(e);
+    }
+
+    private void UpdateDropIndicator(DragEventArgs e)
+    {
+        try
+        {
+            var row = FindAncestor<DataGridRow>(e.Source as Control);
+            if (row == null)
+            {
+                dropIndicator.IsVisible = false;
+                return;
+            }
+
+            var rowTop = row.TranslatePoint(new Point(0, 0), lstProfiles) ?? new Point(0, 0);
+            var mouseY = e.GetPosition(lstProfiles).Y;
+            var rowHeight = row.Bounds.Height;
+            var isBelow = (mouseY - rowTop.Y) > rowHeight / 2;
+            var dropY = isBelow ? rowTop.Y + rowHeight : rowTop.Y;
+
+            _dropBelow = isBelow;
+            dropIndicator.Margin = new Thickness(0, dropY - 1.5, 0, 0);
+            dropIndicator.IsVisible = true;
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+        }
     }
 
     private void LstProfiles_Drop(object? sender, DragEventArgs e)
     {
-        if (!e.DataTransfer.Contains(LstProfilesRowFormat))
+        try
         {
-            return;
-        }
-        ProfileItemModel? sourceItem = null;
-        foreach (var item in e.DataTransfer.Items)
-        {
-            if (!item.Formats.Contains(LstProfilesRowFormat))
+            if (!e.DataTransfer.Contains(_dragFormat))
             {
-                continue;
+                return;
             }
-            if (item.TryGetRaw(LstProfilesRowFormat) is not ProfileItemModel model)
-            {
-                continue;
-            }
-            sourceItem = model;
-            break;
-        }
-        if (sourceItem == null)
-        {
-            return;
-        }
-        if (e.Source is not Visual visualTarget)
-        {
-            return;
-        }
 
-        var targetRow = visualTarget.FindAncestorOfType<DataGridRow>(true);
-        if (targetRow is not { DataContext: ProfileItemModel targetItem })
-        {
-            return;
+            var startIndex = -1;
+            foreach (var item in e.DataTransfer.Items)
+            {
+                if (!item.Formats.Contains(_dragFormat))
+                {
+                    continue;
+                }
+                if (item.TryGetRaw(_dragFormat) is int idx)
+                {
+                    startIndex = idx;
+                    break;
+                }
+            }
+            var row = FindAncestor<DataGridRow>(e.Source as Control);
+            var targetItem = row?.DataContext as ProfileItemModel;
+            if (startIndex < 0 || targetItem == null || ViewModel == null)
+            {
+                return;
+            }
+
+            var sourceItem = ViewModel.ProfileItems.ElementAtOrDefault(startIndex);
+            if (sourceItem == null || sourceItem.IndexId == targetItem.IndexId)
+            {
+                dropIndicator.IsVisible = false;
+                return;
+            }
+
+            dropIndicator.IsVisible = false;
+            _ = MoveServerAsync(startIndex, targetItem, _dropBelow);
+            e.Handled = true;
         }
-        if (ReferenceEquals(sourceItem, targetItem))
+        catch (Exception ex)
         {
-            return;
-        }
-        if (lstProfiles.ItemsSource is not IList<ProfileItemModel> items)
-        {
-            return;
-        }
-        var oldIndex = items.IndexOf(sourceItem);
-        var newIndex = items.IndexOf(targetItem);
-        if (oldIndex >= 0 && newIndex >= 0)
-        {
-            ViewModel?.MoveServerTo(oldIndex, targetItem, false);
+            Logging.SaveLog(_tag, ex);
         }
     }
+
+    private async Task MoveServerAsync(int startIndex, ProfileItemModel targetItem, bool insertBelow)
+    {
+        try
+        {
+            await ViewModel.MoveServerTo(startIndex, targetItem, insertBelow);
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+        }
+    }
+
+    private static T? FindAncestor<T>(Control? current) where T : Control
+    {
+        while (current != null)
+        {
+            if (current is T ancestor)
+            {
+                return ancestor;
+            }
+            current = current.Parent as Control;
+        }
+        return null;
+    }
+
+#pragma warning restore CS0618
 
     #endregion Drag and Drop
 }
