@@ -1,30 +1,105 @@
-name: release Windows desktop (Avalonia UI)
+name: Auto deploy Windows (xray-only fork core)
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       release_tag:
         required: false
         type: string
-  push:
-    branches:
-      - master
+        description: "Release tag (default: auto v7.24.7-xrayonly-N)"
 
 permissions:
   contents: write
   actions: read
 
 jobs:
-  build:
-    uses: ./.github/workflows/build.yml
-    with:
-      target: windows
+  deploy:
+    name: build + package + release
+    runs-on: windows-latest
+    env:
+      XRAY_FORK_REPO: 1345695/Xray-core
+      XRAY_VERSION: v26.7.28
+    steps:
+      - name: Checkout v2rayN
+        uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
 
-  release-zip:
-    if: inputs.release_tag != ''
-    needs: build
-    uses: ./.github/workflows/package-zip.yml
-    with:
-      target: windows-desktop
-      release_tag: ${{ inputs.release_tag }}
-    secrets: inherit
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          dotnet-version: '10.0.1xx'
+
+      - name: Build v2rayN (self-contained win-x64)
+        shell: bash
+        working-directory: ./v2rayN
+        run: |
+          dotnet publish ./v2rayN.Desktop/v2rayN.Desktop.csproj \
+            -c Release -r win-x64 -p:SelfContained=true \
+            -p:EnableWindowsTargeting=true \
+            -o ../publish
+
+      - name: Remove debug symbols
+        shell: bash
+        run: |
+          find ./publish -type f -name '*.pdb' -delete
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.x'
+
+      - name: Build fork Xray core
+        shell: bash
+        run: |
+          git clone --depth 1 "https://github.com/${{ env.XRAY_FORK_REPO }}.git" xray-fork
+          cd xray-fork
+          go build -trimpath -ldflags "-s -w" -o xray.exe ./main
+          ls -la xray.exe
+
+      - name: Download geo data
+        shell: bash
+        run: |
+          curl -sL -o geo.zip "https://github.com/XTLS/Xray-core/releases/download/${{ env.XRAY_VERSION }}/Xray-windows-64.zip"
+          mkdir -p geo
+          unzip -o -j geo.zip geoip.dat geosite.dat -d geo
+
+      - name: Package zip
+        shell: bash
+        run: |
+          mkdir -p package/bin/xray
+          cp -r publish/. package/
+          cp xray-fork/xray.exe package/bin/xray/
+          cp geo/geoip.dat geo/geosite.dat package/bin/
+          cd package
+          rm -rf guiConfigs guiLogs guiTemps guiBackups binConfigs
+          7z a -tZip -mx9 ../v2rayN-windows-64.zip . -xr!.git
+
+      - name: Compute release tag
+        id: tag
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.release_tag }}" ]; then
+            echo "tag=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=v7.24.7-xrayonly-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: v2rayN 7.24.7 xray-only ${{ steps.tag.outputs.tag }}
+          body: |
+            Auto-deployed from branch `master` (${{ github.sha }})
+
+            - v2rayN **7.24.7** (net10.0, Avalonia 12, self-contained single exe)
+            - Xray core: **fork build** (${{ env.XRAY_FORK_REPO }} @ ${{ env.XRAY_VERSION }}, splithttp padding / 4-way pooling / WS EarlyData)
+            - Custom drag-drop: long-press multi-select, Ctrl toggle, Ctrl+Alt sort with drop indicator
+            - Xray-only: sing-box / mihomo / Clash / TUIC / Naive removed
+          files: v2rayN-windows-64.zip
+          draft: false
+          prerelease: false
