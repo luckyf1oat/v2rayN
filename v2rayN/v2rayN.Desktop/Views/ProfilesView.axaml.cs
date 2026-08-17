@@ -8,15 +8,7 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
 {
     private static Config _config;
     private static readonly string _tag = "ProfilesView";
-    private Point _dragStartPoint;
-    private int _dragSourceIndex = -1;
-    private bool _isPointerPressed = false;
-    private bool _isDragging = false;
-    private bool _dropBelow = false;
-    private bool _isSelecting = false;
-    private int _dragSelectStartIndex = -1;
     private bool _suppressSelectionChanged = false;
-    private const string _dragFormat = "v2rayN.ProfileIndex";
 
     public ProfilesView()
     {
